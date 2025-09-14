@@ -59,3 +59,9 @@ Schedule a 30-minute "Git & Setup" workshop. Share your screen and walk through 
 Be the Gatekeeper: You will be the one reviewing all Pull Requests. This is not just about quality control; it's a teaching moment. You can comment and say, "Great start! Just move this line of code here, then I'll merge it."
 
 Anticipate Problems: The classic beginner error is working directly on the main branch and causing conflicts. When (not if) this happens, don't get frustrated. Help them fix it by showing them how to revert their changes and follow the branch process.
+
+---
+
+###  Team Members
+
+- Pratiksha Choudhuri
