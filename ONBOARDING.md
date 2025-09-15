@@ -66,3 +66,4 @@ Anticipate Problems: The classic beginner error is working directly on the main 
 
 - Pratiksha Choudhuri
 - Poonam Kumari
+- Harsh Yadav
