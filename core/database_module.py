@@ -5,10 +5,20 @@ DB_NAME = "database.db"
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-
-    with open("schema.sql", "r") as f:
-        cursor.executescript(f.read())
-
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS profiles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bio TEXT NOT NULL,
+            openness REAL,
+            conscientiousness REAL,
+            extraversion REAL,
+            agreeableness REAL,
+            neuroticism REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -40,11 +50,10 @@ def save_profile(profile_data):
                 profile_data["personality"]["neuroticism"],
             )
         )
-
+        
         conn.commit()
         conn.close()
         return True
-
-    except Exception:
+    except Exception as e:
+        print(f"Database error: {e}")
         return False
-
