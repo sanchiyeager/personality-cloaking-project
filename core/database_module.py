@@ -1,5 +1,3 @@
-#Harsh's work
-
 import sqlite3
 
 DB_NAME = "database.db"
@@ -14,10 +12,10 @@ def init_db():
     conn.commit()
     conn.close()
 
+init_db()
 
 def save_profile(profile_data):
     try:
-        init_db()
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
 
