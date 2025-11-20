@@ -1,31 +1,58 @@
-#Poonam's work
+# Poonam's work
 
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+import torch
 
-from fastapi import FastAPI
-from pydantic import BaseModel
-import random
+# ===========================
+# 1. LOAD PERSONALITY MODEL
+# ===========================
+tokenizer = AutoTokenizer.from_pretrained("vladinc/bigfive-regression-model")
+model = AutoModelForSequenceClassification.from_pretrained("vladinc/bigfive-regression-model")
 
-app = FastAPI()
+def get_personality_scores(text):
+    inputs = tokenizer(text, return_tensors="pt")
+    outputs = model(**inputs)
+    scores = torch.softmax(outputs.logits, dim=1).tolist()[0]
 
-class PersonalityResponse(BaseModel):
-    bio: str
-    personality: dict
-
-@app.post("/generate_bait_profile")
-def generate_bait_profile():
-    bio_templates = [
-        "I love trying out new food trucks...",
-        "Design lead by day...",
-        "Graduate student in CS...",
-        "Freelance photographer..."
-    ]
-
-    personality = {
-        "openness": round(random.uniform(0.2, 0.95), 2),
-        "conscientiousness": round(random.uniform(0.1, 0.9), 2),
-        "extraversion": round(random.uniform(0.05, 0.9), 2),
-        "agreeableness": round(random.uniform(0.15, 0.95), 2),
-        "neuroticism": round(random.uniform(0.05, 0.85), 2)
+    return {
+        "openness": scores[0],
+        "conscientiousness": scores[1],
+        "extraversion": scores[2],
+        "agreeableness": scores[3],
+        "neuroticism": scores[4],
     }
 
-    return {"bio": random.choice(bio_templates), "personality": personality}
+# ===========================
+# 2. BIO GENERATOR
+# ===========================
+bio_generator = pipeline("text-generation", model="distilgpt2")
+
+def generate_bio_for_trait(trait):
+    prompt = f"Write a short friendly social media bio for someone who has {trait}."
+    result = bio_generator(prompt, max_length=60, num_return_sequences=1)
+    return result[0]["generated_text"]
+
+
+# ===========================
+# 3. MAIN BAIT GENERATOR FUNCTION (REQUIRED BY FastAPI)
+# ===========================
+def generate_bait_profile(trait: str):
+    """
+    This is the function FastAPI will call.
+    You MUST have this function or backend_api will crash.
+    """
+
+    # personality score for the given trait
+    scores = get_personality_scores(trait)
+
+    # generate a matching bio
+    bio = generate_bio_for_trait(trait)
+
+    return {
+        "trait": trait,
+        "scores": scores,
+        "bio": bio
+    }
+
+
+    
