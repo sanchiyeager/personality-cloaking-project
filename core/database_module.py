@@ -4,8 +4,20 @@ import sqlite3
 
 DB_NAME = "database.db"
 
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    with open("schema.sql", "r") as f:
+        cursor.executescript(f.read())
+
+    conn.commit()
+    conn.close()
+
+
 def save_profile(profile_data):
     try:
+        init_db()
         conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
 
@@ -22,20 +34,19 @@ def save_profile(profile_data):
             VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
-                profile_data.get("bio"),
-                profile_data.get("openness"),
-                profile_data.get("conscientiousness"),
-                profile_data.get("extraversion"),
-                profile_data.get("agreeableness"),
-                profile_data.get("neuroticism"),
+                profile_data["bio"],
+                profile_data["personality"]["openness"],
+                profile_data["personality"]["conscientiousness"],
+                profile_data["personality"]["extraversion"],
+                profile_data["personality"]["agreeableness"],
+                profile_data["personality"]["neuroticism"],
             )
         )
 
         conn.commit()
-        profile_id = cursor.lastrowid
         conn.close()
+        return True
 
-        return True, profile_id
+    except Exception:
+        return False
 
-    except sqlite3.Error:
-        return False, None
