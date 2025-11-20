@@ -1,163 +1,135 @@
-# app.py
-# Streamlit Command Center for Persona Cloak (Manisha - Frontend)
-#
-# Run: pip install streamlit plotly requests
-# then: streamlit run app.py
+# main.py
+import sys, requests, logging
+from typing import Optional, Dict, Any
+from core.models import BaitProfile
 
-import streamlit as st
-import requests
-import plotly.graph_objects as go
-from datetime import datetime
-import json
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("orchestrator")
 
-st.set_page_config(page_title="Persona Cloak — Command Center", layout="wide")
-
-# -------------------------
-# Config: set this to your backend API when available
-# -------------------------
-BACKEND_API_URL = "http://localhost:8000/generate_bait_profile"  # change when backend ready
-USE_BACKEND = False  # flip True to call real backend
-
-# -------------------------
-# Mock generator (used when backend not ready)
-# -------------------------
-import random
-def mock_generate_bait_profile():
-    names = ["Asha Rao", "Ravi Menon", "Sana Kapoor", "Irfan Sheikh", "Priya Das"]
-    bio_templates = [
-        "I love trying out new food trucks and sketching in the park. Currently learning web dev.",
-        "Design lead by day, amateur guitarist by night. Always looking for new coffee spots.",
-        "Graduate student in CS. Passionate about NLP, long runs and indie films.",
-        "Freelance photographer traveling across small towns, caffeinated and curious.",
-    ]
-    bio = random.choice(bio_templates)
-    # personality values between 0 and 1 (Big Five)
-    personality = {
-        "openness": round(random.uniform(0.2, 0.95), 2),
-        "conscientiousness": round(random.uniform(0.1, 0.9), 2),
-        "extraversion": round(random.uniform(0.05, 0.9), 2),
-         "agreeableness": round(random.uniform(0.15, 0.95), 2),
-        "neuroticism": round(random.uniform(0.05, 0.85), 2),
-    }
-    return {"bio": bio, "personality": personality}
-
-# -------------------------
-# Helper: call backend or mock
-# -------------------------
-def get_bait_profile():
-    if USE_BACKEND:
+class ProjectJanusOrchestrator:
+    def __init__(self):
+        self.components = {
+            'bait_generator': False,
+            'database': False,
+            'frontend': False
+        }
+        self._setup_components()
+    
+    def _setup_components(self):
+        """Test if all components are available"""
         try:
-            resp = requests.post(BACKEND_API_URL, timeout=10)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            st.error(f"Error calling backend: {e}")
-            return None
-    else:
-        return mock_generate_bait_profile()
-
-# -------------------------
-# UI layout
-# -------------------------
-st.title("🛡 Persona Cloak — Command Center")
-st.write("Generate bait profiles and inspect their personality scores (Big Five).")
-
-col1, col2 = st.columns([2, 3])
-
-with col1:
-    st.header("Controls")
-    st.write("Click the button to generate a new bait profile.")
-    if st.button("Generate Bait Profile"):
-        with st.spinner("Generating..."):
-            data = get_bait_profile()
-            if data:
-                # Normalize trait order and save to session history
-                processed = {
-                    "bio": data.get("bio", ""),
-                    "personality": {
-                        "openness": data["personality"].get
-                         "conscientiousness": data["personality"].get("conscientiousness", 0),
-                        "extraversion": data["personality"].get("extraversion", 0),
-                        "agreeableness": data["personality"].get("agreeableness", 0),
-                        "neuroticism": data["personality"].get("neuroticism", 0),
-                    },
-                    "generated_at": datetime.utcnow().isoformat() + "Z"
-                }
-                # store in session state
-                if "history" not in st.session_state:
-                    st.session_state.history = []
-                st.session_state.history.insert(0, processed)
-                st.success("Bait profile generated and saved to history.")
-    st.markdown("---")
-    st.subheader("Options")
-    st.checkbox("Use real backend", value=USE_BACKEND, key="use_backend_checkbox")
-    # sync the flag (if user toggles)
-    if st.session_state.use_backend_checkbox != USE_BACKEND:
-        # show hint
-        st.info("Toggle USE_BACKEND flag in code or update BACKEND_API_URL to enable backend calls.")
-    st.write("Backend URL:")
-    st.text_input("Backend API URL", value=BACKEND_API_URL, key="backend_url_input")
-
-with col2:
-    st.header("Latest Generated Profile")
-    if "history" in st.session_state and st.session_state.history:
-        latest = st.session_state.history[0]
-        st.subheader("Bio")
-        st.info(latest["bio"])
-        st.write("Generated at:", latest["generated_at"])
-
-        # personality table
-        st.subheader("Personality Scores (Big Five)")
-        scores = latest["personality"]
-        # show as two-column table
-        cols = st.columns(5)
-        for i, (k, v) in enumerate(scores.items()):
-            cols[i].metric(k.capitalize(), f"{v:.2f}")
-
-        # Radar chart (Plotly)
-        st.subheader("Radar Chart")
-        categories = list(scores.keys())
-         values = [scores[c] for c in categories]
-        # radar needs closed loop
-        categories_closed = categories + [categories[0]]
-        values_closed = values + [values[0]]
-
-        fig = go.Figure(
-            data=[
-                go.Scatterpolar(r=values_closed, theta=[c.capitalize() for c in categories_closed],
-                                fill='toself', name='Personality')
-            ],
-            layout=go.Layout(
-                polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
-                showlegend=False,
-                margin=dict(l=40, r=40, t=30, b=30)
+            from core import bait_generator
+            self.bait_generator = bait_generator
+            self.components['bait_generator'] = True
+            logger.info("✅ Bait generator connected")
+        except ImportError as e:
+            logger.warning("❌ Bait generator not available: %s", e)
+            self.bait_generator = None
+        
+        try:
+            from core import database_module
+            self.database = database_module
+            self.components['database'] = True
+            logger.info("✅ Database module connected")
+        except ImportError as e:
+            logger.warning("❌ Database module not available: %s", e)
+            self.database = None
+    
+    def generate_bait_profile(self, trait: str) -> Optional[BaitProfile]:
+        """Generate a bait profile using Poonam's component"""
+        if not self.components['bait_generator']:
+            logger.error("Bait generator not available")
+            return self._create_fallback_profile(trait)
+        
+        try:
+            raw_profile = self.bait_generator.generate_bait_profile(trait)
+            
+            profile = BaitProfile(
+                bio=raw_profile.get('bio', ''),
+                personality=raw_profile.get('scores', {}),
+                target_trait=trait
             )
+            
+            logger.info("🎣 Generated bait profile for trait: %s", trait)
+            return profile
+            
+        except Exception as e:
+            logger.error("Error generating profile: %s", e)
+            return self._create_fallback_profile(trait)
+    
+    def _create_fallback_profile(self, trait: str) -> BaitProfile:
+        """Create a fallback profile when components fail"""
+        fallback_bios = {
+            "high_neuroticism": "I feel constantly worried about everything in my life. The smallest things make me anxious.",
+            "high_agreeableness": "I love helping others and always try to see the best in people. Trust comes easily to me.",
+            "low_conscientiousness": "I go with the flow and don't worry too much about planning. Life's more fun that way!"
+        }
+        
+        return BaitProfile(
+            bio=fallback_bios.get(trait, "A person looking to connect with others."),
+            personality={
+                "openness": 0.5,
+                "conscientiousness": 0.5,
+                "extraversion": 0.5,
+                "agreeableness": 0.5,
+                "neuroticism": 0.5
+            },
+            target_trait=trait
         )
-        st.plotly_chart(fig, use_container_width=True)
+    
+    def save_profile(self, profile: BaitProfile) -> bool:
+        """Save profile using Harsh's database component"""
+        if not self.components['database']:
+            logger.warning("Database not available - profile not saved")
+            return False
+        
+        try:
+            result = self.database.save_profile(profile.to_dict())
+            logger.info("💾 Profile saved to database")
+            return True
+        except Exception as e:
+            logger.error("Error saving to database: %s", e)
+            return False
+    
+    def get_system_status(self) -> Dict[str, Any]:
+        """Get status of all integrated components"""
+        return {
+            'components': self.components,
+            'ready': all(self.components.values()),
+            'timestamp': __import__('datetime').datetime.now().isoformat()
+        }
+    
+    def run_demo(self):
+        """Run a complete demo of the system"""
+        print("\n" + "="*50)
+        print("🚀 PROJECT JANUS - SYSTEM DEMO")
+        print("="*50)
+        
+        status = self.get_system_status()
+        print(f"System Status: {status}")
+        
+        # Test with different personality traits
+        test_traits = ["high_neuroticism", "high_agreeableness", "low_conscientiousness"]
+        
+        for trait in test_traits:
+            print(f"\n--- Testing: {trait} ---")
+            profile = self.generate_bait_profile(trait)
+            
+            if profile:
+                print(f"Bio: {profile.bio}")
+                print(f"Scores: {profile.personality}")
+                
+                # Try to save
+                if self.save_profile(profile):
+                    print("✅ Saved to database")
+                else:
+                    print("⚠️  Could not save to database")
+            else:
+                print("❌ Failed to generate profile")
 
-        # download / copy actions
-        st.markdown("---")
-        col_a, col_b = st.columns([1, 1])
-        with col_a:
-            if st.button("Copy Bio to Clipboard"):
-                st.experimental_set_query_params()  # no-op to allow feedback
-                # Streamlit doesn't have clipboard API; show textarea for manual copy
-                st.text_area("Copy bio (select and copy)", value=latest["bio"], height=120)
-        with col_b:
-            if st.download_button("Download Profile (JSON)", data=json.dumps(latest, indent=2), file_name="bait_profile.json"):
-                st.success("Download started.")
+# Global instance
+janus = ProjectJanusOrchestrator()
 
-    else:
-        st.info("No profile generated yet. Click 'Generate Bait Profile' to begin.")
-
-st.markdown("---")
-st.header("History (most recent first)")
-if "history" in st.session_state and st.session_state.history:
-    for idx, item in enumerate(st.session_state.history):
-        with st.expander(f"{idx+1}. {item['generated_at']}"):
-            st.write("Bio:")
-            st.write(item["bio"])
-            st.write("Personality:")
-            st.json(item["personality"])
-else:
-     st.write("No history yet.")
+if __name__ == "__main__":
+    janus.run_demo()

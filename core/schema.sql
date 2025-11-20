@@ -1,3 +1,5 @@
+#Harsh's work
+
 CREATE TABLE profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     bio TEXT NOT NULL,

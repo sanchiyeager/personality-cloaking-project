@@ -1,3 +1,6 @@
+#Poonam's work
+
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 import random
@@ -26,4 +29,3 @@ def generate_bait_profile():
     }
 
     return {"bio": random.choice(bio_templates), "personality": personality}
-
