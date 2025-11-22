@@ -73,7 +73,7 @@ if st.button("✨ Generate Bait Profile"):
     # Show as a clean table
     st.json(traits)
 
-     st.markdown("---")
+    st.markdown("---")
 
     # --------------------------------
     # Radar Chart
