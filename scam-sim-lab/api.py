@@ -10,15 +10,13 @@ app = FastAPI(title="Scam Simulation API")
 MIN_SECONDS_BETWEEN_CALLS = 3
 _last_call = 0.0
 
-
 class GenerateRequest(BaseModel):
     category: Literal["phishing", "romance", "investment"]
-
+    target_personality: str = "default"
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
 
 @app.post("/generate")
 def generate(req: GenerateRequest):
@@ -29,7 +27,7 @@ def generate(req: GenerateRequest):
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     try:
-        result = generate_and_log(req.category)
+        result = generate_and_log(req.category, req.target_personality)
         _last_call = now
         return result
     except ValueError as e:
