@@ -5,6 +5,9 @@ import plotly.graph_objects as go
 # IMPORT Poonam's backend (janus)
 # -----------------------------
 from main import janus   # <-- This connects your app to the real ML system
+from scam_generator import generate_scam
+import logging, time
+logging.basicConfig(filename="simulation.log", level=logging.INFO)
 
 
 # -----------------------------
@@ -108,4 +111,7 @@ if st.button("✨ Generate Bait Profile"):
 else:
     st.info("Click *Generate Bait Profile* to see results.")
 
+if st.button("Generate Simulated Scam Message"):
+    msg, typ = generate_scam()
+    st.warning(msg)
 
