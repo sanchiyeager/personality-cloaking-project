@@ -1,10 +1,8 @@
 FROM python:3.11-slim
-
 WORKDIR /app
-
-COPY app/ /app/app/
-COPY logs/ /app/logs/
-
-RUN mkdir -p /app/logs
-
-CMD ["python", "app/generator.py"]
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN mkdir -p logs
+EXPOSE 8010
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8010"]

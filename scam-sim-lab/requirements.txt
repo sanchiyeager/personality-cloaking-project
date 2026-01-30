@@ -1,4 +1,3 @@
-plotly
-pandas
-numpy
-matplotlib
+fastapi
+uvicorn
+pydantic
