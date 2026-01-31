@@ -47,7 +47,7 @@
 - Tracks personality, scam type, drop-off stage
 - Supports analytics and exports
 
-### Pratiksha – System Integration
+### Sanchi – System Integration
 - Validates personality–scam mapping
 - Ensures KPIs and safety compliance
 
