@@ -10,7 +10,7 @@
 | Agreeableness | Trusting, empathetic | Romance, charity scams | 90% |
 | Neuroticism | Anxious, fear-driven | Investment scams | 85% |
 
-> Success rates are simulated for AI research purposes only.
+
 
 ---
 
