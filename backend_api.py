@@ -1,56 +1,48 @@
-﻿from fastapi import FastAPI, Request, HTTPException
-import os
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-from rate_limiter import RateLimiter
-from logging_config import get_logger
-from safety import safety_check, SAFE_WATERMARK
+# Existing import
+from core.bait_generator import generate_bait_profile
 
-from scam_templates import generate_template as generate_message
+# NEW import (Chatbot Response Engine)
+from core.chat_engine import generate_chat_response
 
-app = FastAPI(title="Backend Scam Simulation API (Safe)")
 
-limiter = RateLimiter(max_requests=10, window_seconds=60)
-logger = get_logger()
+app = FastAPI()   # ASGI app
 
-API_TOKEN = os.getenv("API_TOKEN", "")
 
-@app.get("/simulate/{kind}")
-async def simulate(kind: str, request: Request):
-    client_ip = request.client.host if request.client else "unknown"
+# ----------------------------
+# Request Models
+# ----------------------------
 
-    if API_TOKEN:
-        token = request.headers.get("x-api-token", "")
-        if token != API_TOKEN:
-            raise HTTPException(status_code=401, detail="Unauthorized")
+class TraitRequest(BaseModel):
+    trait: str
 
-    ok, retry = limiter.allow(client_ip)
-    if not ok:
-        logger.info(f"RATE_LIMIT | ip={client_ip} retry_after={retry}s")
-        raise HTTPException(status_code=429, detail=f"Too many requests. Retry after {retry}s")
 
-    try:
-        data = generate_message(kind)
-    except Exception as e:
-        logger.info(f"GEN_ERROR | ip={client_ip} kind={kind} | err={str(e)}")
-        raise HTTPException(status_code=400, detail=f"Generator error: {str(e)}")
+class ChatRequest(BaseModel):
+    personality_scores: dict
+    message: str
 
-    if not isinstance(data, dict):
-        raise HTTPException(status_code=500, detail=f"Generator returned {type(data)} not dict")
 
-    subject = data.get("subject", "")
-    message = data.get("message", "")
+# ----------------------------
+# API Endpoints
+# ----------------------------
 
-    if SAFE_WATERMARK not in subject:
-        subject = f"{SAFE_WATERMARK} {subject}".strip()
-    if SAFE_WATERMARK not in message:
-        message = f"{SAFE_WATERMARK}\n{message}".strip()
+@app.post("/generate_bait_profile")
+def generate_bait_profile_api(request: TraitRequest):
+    result = generate_bait_profile(request.trait)
+    return result
 
-    combined = subject + "\n" + message
 
-    ok2, reason = safety_check(combined)
-    if not ok2:
-        logger.info(f"BLOCKED | ip={client_ip} kind={kind} | reason={reason}")
-        raise HTTPException(status_code=400, detail=f"Blocked: {reason}")
+@app.post("/generate_chat_response")
+def generate_chat_response_api(request: ChatRequest):
+    response = generate_chat_response(
+        request.personality_scores,
+        request.message
+    )
+    return {"response": response}
 
-    logger.info(f"OK | ip={client_ip} kind={kind}")
-    return {"type": kind, "subject": subject, "message": message}
+
+@app.get("/status")
+def status():
+    return {"status": "ok"}

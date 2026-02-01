@@ -1,4 +1,4 @@
-# Poonam's work
+ # Poonam's work
 
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import torch
@@ -54,13 +54,24 @@ def generate_bio_for_trait(trait):
 # 3. MAIN BAIT GENERATOR FUNCTION
 # ===========================
 def generate_bait_profile(trait: str):
+    """
+    Main function to generate a personality bio + real model scores.
+    """
+    # Optional: fallback text if trait not found
+    fallback_text = "I am a normal person."
+
+    # Get personality scores from model
+    scores = get_personality_scores(fallback_text)
+
+    # Generate matching short bio
     bio = generate_bio_for_trait(trait)
-    scores = get_personality_scores(bio)  # Analyze the ACTUAL bio, not fallback!
-    
+
     return {
-        "bio": bio,
-        "scores": scores  # Remove "trait" field
+        "trait": trait,
+        "scores": scores,
+        "bio": bio
     }
+
 # ===========================
 # 4. TESTING (optional)
 # ===========================
