@@ -1,0 +1,5 @@
+logs/
+*.egg-info/
+_pycache_/
+*.pyc
+logs/
