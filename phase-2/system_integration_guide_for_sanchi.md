@@ -20,6 +20,6 @@
 
 ## Test Scenarios
 - Agreeableness + Neuroticism → Romance scam simulation
-- Neuroticism + Conscientiousness → Investment scam simulation
+- Neuroticism + Conscientiousness → Investment / get-rich-quick scam simulation
 - Extraversion → Giveaway / influencer scam simulation
-- Openness → Tech support scam simulation
+- Openness → Tech support / phishing scam simulation
