@@ -1,18 +1,22 @@
 # DATA TRACKING REQUIREMENTS
 
-## Mandatory Data Fields
-1. Big Five personality scores
-2. Scam type
-3. Response time (seconds)
-4. Total messages
-5. Drop-off stage
+## Mandatory Fields
+- Big Five personality scores
+- Scam type classification
+- Response timestamps
+- Total message count
+- Drop-off stage
 
-## Success Flags
-- Scammer engaged (5+ messages)
-- Asked personal questions
-- Requested money or OTP
+## Personality-Based Analytics
+- Neuroticism-linked scam success rates
+- Agreeableness-linked emotional engagement levels
+- Extraversion-linked social interaction depth
 
-## Analytics Questions
-- Which personality is targeted most?
-- Which scam has highest success rate?
-- Average time to money request?
+## Key Analytics Questions
+- Which personality trait is most targeted?
+- Which scam type shows highest engagement?
+- Average time before financial request?
+
+## Data Safety Rules
+- No real user-identifiable information
+- All datasets must remain anonymized
