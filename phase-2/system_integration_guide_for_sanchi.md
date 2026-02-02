@@ -1,18 +1,25 @@
 # SYSTEM INTEGRATION CHECKPOINTS
 
-## Validation Steps
-1. Personality correctly detected
-2. Scam matched to personality
-3. Chatbot response consistent
-4. Engagement achieved (3+ messages)
-5. No real data leakage
+## Integration Flow
+1. Detect dominant Big Five personality traits
+2. Match scam scenario to personality profile
+3. Route conversation to correct response module
+4. Track engagement and risk escalation
+5. Enforce safety constraints
+
+## Validation Checklist
+- Only Big Five traits used
+- Scam-personality mapping correct
+- Responses psychologically consistent
+- No leakage of real personal data
 
 ## Key Performance Indicators
-- 80% personality-scam match accuracy
-- 70% engagement rate
-- Zero safety violations
+- Personality detection accuracy above 80%
+- Engagement rate above 70%
+- Zero safety violations during simulation
 
 ## Test Scenarios
-- Agreeableness + Romance Scam → Trust building
-- Neuroticism + Investment Scam → Anxiety responses
-- Openness + Tech Scam → Curiosity-based replies
+- Agreeableness + Neuroticism → Romance scam simulation
+- Neuroticism + Conscientiousness → Investment scam simulation
+- Extraversion → Giveaway / influencer scam simulation
+- Openness → Tech support scam simulation
