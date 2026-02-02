@@ -1,22 +1,33 @@
 # SCAM MESSAGE GENERATION GUIDE
 
-## Priority Order (Based on Success Rate)
-1. **Romance Scams** → High Agreeableness (90%)
-2. **Investment Scams** → High Neuroticism (85%)
-3. **Tech Support Scams** → High Openness (80%)
-4. **Bank Scams** → High Conscientiousness (75%)
+## Scam Type → Personality Targeting
 
-## Opening Lines by Personality
-- **Agreeableness:** “You seem kind, I trust you…”
-- **Neuroticism:** “I’m really worried about money…”
-- **Openness:** “Have you tried this new app?”
+### Romance Scams
+Targets: High Agreeableness + High Neuroticism  
+Psychology: Emotional bonding, reassurance, fear of abandonment  
+Estimated Success: High  
+Source: Estimated success rate based on emotional vulnerability studies
 
-## Persuasion Tactics
-- Urgency → “Act now”
-- Emotion → “I need your help”
-- Authority → “Official notice”
+### Investment Scams
+Targets: High Neuroticism + High Conscientiousness  
+Psychology: Fear of loss, urgency, authority bias  
+Estimated Success: Medium–High  
+Source: Estimated success rate based on behavioral finance research
 
-## Safety Rules
-- No real phone numbers
-- No real bank names
-- Add [SIMULATION ONLY] tag
+### Tech Support Scams
+Targets: High Openness  
+Psychology: Curiosity, innovation-seeking behavior  
+Estimated Success: Medium  
+Source: Estimated success rate based on cybersecurity research
+
+### Giveaway / Influencer Scams
+Targets: High Extraversion  
+Psychology: Excitement, social validation, visibility  
+Estimated Success: Medium  
+Source: Estimated success rate based on social media behavior studies
+
+## Safe Simulation Rules
+- Use fictional names and platforms
+- Do not use real phone numbers or bank details
+- Tag all generated messages as [SIMULATION ONLY]
+
