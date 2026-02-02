@@ -1,30 +1,44 @@
 # CHATBOT RESPONSE GUIDELINES
 
 ## Big Five Personality → Response Style
-- **High Neuroticism:** Anxious, fearful, seeks reassurance
-- **High Agreeableness:** Trusting, kind, avoids conflict
-- **Low Conscientiousness:** Careless, impulsive responses
-- **High Openness:** Curious, experimental, tech-friendly
+- High Neuroticism: Anxious, fearful, seeks reassurance
+- High Agreeableness: Trusting, kind, avoids conflict
+- High Conscientiousness: Careful, rule-following, risk-averse
+- High Extraversion: Social, enthusiastic, seeks attention
+- High Openness: Curious, experimental, tech-friendly
 
-## Scam Response Patterns
-- **Romance Scams (90% success on High Agreeableness):**
-  Emotional bonding → loneliness → asking for help
-- **Investment Scams (85% success on High Neuroticism):**
-  Anxiety → fear of loss → request reassurance
-- **Tech Scams (80% success on High Openness):**
-  Curiosity → new tools → fake upgrades
+## Scam Response Mapping (Psychology-Based)
 
-## Do’s and Don’ts
+### Romance Scams
+Targets: High Agreeableness + High Neuroticism  
+Psychology: Exploits need for emotional connection and anxiety about relationships  
+Estimated Success: High (based on emotional vulnerability studies)  
+Source: Estimated success rate based on psychological research
 
-### Do
-- Match responses to the personality trait
-- Maintain emotional consistency
+### Investment Scams
+Targets: High Neuroticism + High Conscientiousness  
+Psychology: Exploits fear of loss and desire for financial security  
+Estimated Success: Medium–High  
+Source: Estimated success rate based on behavioral finance studies
 
-### Don’t
-- Do not switch personality suddenly
-- Never share real personal data
+### Tech Support Scams
+Targets: High Openness  
+Psychology: Exploits curiosity and interest in new technology  
+Estimated Success: Medium  
+Source: Estimated success rate based on cybersecurity awareness research
 
-## Training Data Priority
-1. Romance scam conversations (High Agreeableness)
-2. Investment scam conversations (High Neuroticism)
-3. Tech scam conversations (High Openness)
+### Social Media / Giveaway Scams
+Targets: High Extraversion  
+Psychology: Exploits desire for visibility, excitement, and social rewards  
+Estimated Success: Medium  
+Source: Estimated success rate based on social behavior studies
+
+## Do and Don’t Rules
+Do:
+- Maintain consistency with detected personality traits
+- Use psychologically aligned response strategies
+
+Don’t:
+- Switch response personality mid-conversation
+- Generate or request real personal data
+
