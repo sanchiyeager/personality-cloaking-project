@@ -5,54 +5,6 @@ import random
 from datetime import datetime
 
 # -----------------------------
-# IMPORT BACKEND (JANUS)
-# -----------------------------
-from main import janus
-
-
-# -----------------------------
-# BACKEND CONNECTOR
-# -----------------------------
-def get_bait_profile(trait):
-    profile = janus.generate_bait_profile(trait)
-    return profile.to_dict()
-
-
-# -----------------------------
-# SIMULATED AI RESPONSE
-# -----------------------------
-def generate_ai_reply(message, trait):
-    responses = {
-        "high_neuroticism": [
-            "I’m not sure… this feels risky.",
-            "This is making me anxious.",
-            "Can you explain more?"
-        ],
-        "high_extraversion": [
-            "Oh wow 😄 sounds interesting!",
-            "Haha okay, tell me more!",
-            "That’s exciting!"
-        ],
-        "low_openness": [
-            "I don’t usually try new things.",
-            "I prefer to be careful.",
-            "I’m not comfortable with this."
-        ],
-        "low_agreeableness": [
-            "Why should I trust you?",
-            "This doesn’t sound right.",
-            "I don’t believe this."
-        ],
-        "high_conscientiousness": [
-            "I need proper verification.",
-            "Let me check the details first.",
-            "I prefer documented proof."
-        ]
-    }
-    return random.choice(responses.get(trait, ["Okay."]))
-
-
-# -----------------------------
 # STREAMLIT CONFIG
 # -----------------------------
 st.set_page_config(page_title="Persona Cloak Command Center", layout="wide")
@@ -61,13 +13,60 @@ st.markdown("---")
 
 
 # -----------------------------
+# MOCK DATA (UI ONLY)
+# -----------------------------
+def get_mock_bait_profile(trait):
+    return {
+        "bio": "I prefer to stay cautious online and think carefully before responding.",
+        "personality": {
+            "openness": round(random.uniform(0.3, 0.6), 2),
+            "conscientiousness": round(random.uniform(0.6, 0.9), 2),
+            "extraversion": round(random.uniform(0.2, 0.5), 2),
+            "agreeableness": round(random.uniform(0.4, 0.7), 2),
+            "neuroticism": round(random.uniform(0.6, 0.85), 2),
+        }
+    }
+
+
+def generate_mock_ai_reply(trait):
+    replies = {
+        "high_neuroticism": [
+            "I’m not sure about this… it feels risky.",
+            "This is making me anxious.",
+            "Can you explain more?"
+        ],
+        "high_extraversion": [
+            "Oh wow 😄 that sounds interesting!",
+            "Haha okay, tell me more!",
+            "That’s exciting!"
+        ],
+        "low_openness": [
+            "I don’t usually try new things.",
+            "I prefer familiar options.",
+            "I’m not comfortable with this."
+        ],
+        "low_agreeableness": [
+            "Why should I trust this?",
+            "This doesn’t sound right.",
+            "I don’t believe this."
+        ],
+        "high_conscientiousness": [
+            "I need proper verification.",
+            "Please provide official details.",
+            "I prefer documented proof."
+        ]
+    }
+    return random.choice(replies.get(trait, ["Okay."]))
+
+
+# -----------------------------
 # SESSION STATE
 # -----------------------------
-if "profile_data" not in st.session_state:
-    st.session_state.profile_data = None
+if "profile" not in st.session_state:
+    st.session_state.profile = None
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+if "chat" not in st.session_state:
+    st.session_state.chat = []
 
 if "ai_typing" not in st.session_state:
     st.session_state.ai_typing = False
@@ -78,7 +77,7 @@ if "ai_typing" not in st.session_state:
 # -----------------------------
 st.markdown("""
 <style>
-.chat-container {
+.chat-box {
     height: 420px;
     overflow-y: auto;
     background-color: #ECE5DD;
@@ -123,7 +122,7 @@ st.markdown("""
 left_col, right_col = st.columns([1, 1])
 
 # =================================================
-# LEFT PANEL — PROFILE GENERATOR
+# LEFT PANEL — PROFILE GENERATION
 # =================================================
 with left_col:
     st.subheader("🎭 Bait Profile Generator")
@@ -140,18 +139,15 @@ with left_col:
     )
 
     if st.button("✨ Generate Bait Profile"):
-        with st.spinner("Generating bait profile..."):
-            st.session_state.profile_data = get_bait_profile(trait)
-            st.session_state.chat_history = []
+        st.session_state.profile = get_mock_bait_profile(trait)
+        st.session_state.chat = []
 
-    if st.session_state.profile_data:
-        data = st.session_state.profile_data
-
+    if st.session_state.profile:
         st.markdown("### 📝 Generated Bio")
-        st.info(data["bio"])
+        st.info(st.session_state.profile["bio"])
 
         st.markdown("### 📊 Personality Scores")
-        traits = data["personality"]
+        traits = st.session_state.profile["personality"]
         st.json(traits)
 
         labels = list(traits.keys())
@@ -168,16 +164,16 @@ with left_col:
         )
         st.plotly_chart(fig, use_container_width=True)
 
+
 # =================================================
 # RIGHT PANEL — CHAT UI
 # =================================================
 with right_col:
     st.subheader("💬 Scam Interaction Simulator")
 
-    if not st.session_state.profile_data:
+    if not st.session_state.profile:
         st.warning("Generate a bait profile to start chatting.")
     else:
-        # HEADER
         st.markdown(
             f"""
             <div style="background:#075E54;color:white;padding:10px;border-radius:8px;">
@@ -188,16 +184,15 @@ with right_col:
             unsafe_allow_html=True
         )
 
-        # CHAT WINDOW
-        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
+        st.markdown('<div class="chat-box">', unsafe_allow_html=True)
 
-        for chat in st.session_state.chat_history:
-            role = "user" if chat["sender"] == "Scammer" else "ai"
+        for msg in st.session_state.chat:
+            role = "user" if msg["sender"] == "Scammer" else "ai"
             st.markdown(
                 f"""
                 <div class="msg {role}">
-                    {chat["text"]}
-                    <div class="time">{chat["time"]}</div>
+                    {msg["text"]}
+                    <div class="time">{msg["time"]}</div>
                 </div>
                 """,
                 unsafe_allow_html=True
@@ -208,42 +203,38 @@ with right_col:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # QUICK REPLIES
         st.markdown("*Quick Scam Messages*")
-        quick = [
+        quick_msgs = [
             "Your account will be blocked today!",
             "You won a lottery prize!",
             "Urgent help needed!"
         ]
 
         cols = st.columns(3)
-        message = ""
-        for col, q in zip(cols, quick):
+        user_message = ""
+        for col, q in zip(cols, quick_msgs):
             if col.button(q):
-                message = q
+                user_message = q
 
-        if not message:
-            message = st.text_input("Type a message")
+        if not user_message:
+            user_message = st.text_input("Type a message")
 
-        # SEND MESSAGE
         if st.button("Send"):
-            if message.strip():
+            if user_message.strip():
                 now = datetime.now().strftime("%H:%M")
-                st.session_state.chat_history.append({
+                st.session_state.chat.append({
                     "sender": "Scammer",
-                    "text": message,
+                    "text": user_message,
                     "time": now
                 })
                 st.session_state.ai_typing = True
                 st.experimental_rerun()
 
-        # AI RESPONSE
         if st.session_state.ai_typing:
             time.sleep(random.randint(1, 3))
-            reply = generate_ai_reply(message, trait)
+            reply = generate_mock_ai_reply(trait)
             now = datetime.now().strftime("%H:%M")
-
-            st.session_state.chat_history.append({
+            st.session_state.chat.append({
                 "sender": "AI",
                 "text": reply,
                 "time": now
@@ -251,17 +242,16 @@ with right_col:
             st.session_state.ai_typing = False
             st.experimental_rerun()
 
-        # CONTROLS
         st.markdown("---")
         col1, col2 = st.columns(2)
 
         if col1.button("🧹 Clear Chat"):
-            st.session_state.chat_history = []
+            st.session_state.chat = []
             st.experimental_rerun()
 
         if col2.button("📄 Export Chat"):
             chat_text = "\n".join(
-                [f"{c['sender']}: {c['text']}" for c in st.session_state.chat_history]
+                [f"{c['sender']}: {c['text']}" for c in st.session_state.chat]
             )
             st.download_button(
                 "Download Conversation",
