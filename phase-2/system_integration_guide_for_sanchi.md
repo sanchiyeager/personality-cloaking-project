@@ -23,4 +23,3 @@
 - Neuroticism + Conscientiousness → Investment scam simulation  
 - Extraversion → Giveaway / influencer scam simulation  
 - Openness → Tech support scam simulation
-
