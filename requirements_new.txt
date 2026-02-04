@@ -1,3 +1,5 @@
+# Copy this entire block into PowerShell
+@"
 # FastAPI & Web Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
@@ -45,3 +47,4 @@ cryptography==41.0.7
 # API & Rate Limiting
 httpx==0.25.1
 aiohttp==3.9.1
+"@ | Out-File -FilePath "requirements_new.txt" -Encoding UTF8
