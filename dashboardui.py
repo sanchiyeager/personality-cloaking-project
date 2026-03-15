@@ -4,234 +4,252 @@ import random
 import time
 from datetime import datetime
 
-# -----------------------------------
-# PAGE CONFIG
-# -----------------------------------
-st.set_page_config(page_title="Persona Cloak", layout="wide")
-
-st.title("🛡 Persona Cloak — Command Center")
+st.set_page_config(layout="wide")
 
 # -----------------------------------
-# SESSION STATE
-# -----------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-if "profile" not in st.session_state:
-    st.session_state.profile = "High Neuroticism"
-
-# -----------------------------------
-# WHATSAPP STYLE CSS
+# CUSTOM CSS (WhatsApp Style)
 # -----------------------------------
 st.markdown("""
 <style>
 
+body {
+    background-color:#ece5dd;
+}
+
 .chat-container{
-    background-color:#efeae2;
-    height:520px;
+    height:500px;
     overflow-y:auto;
-    padding:15px;
+    padding:10px;
+    background:#e5ddd5;
     border-radius:10px;
 }
 
-.message{
-    padding:10px 14px;
+.user-msg{
+    background:#dcf8c6;
+    padding:8px 12px;
     border-radius:10px;
-    margin-bottom:10px;
-    max-width:70%;
-    font-size:14px;
-}
-
-.user{
-    background:#d9fdd3;
+    margin:5px;
+    width:fit-content;
     margin-left:auto;
-    text-align:right;
 }
 
-.ai{
+.ai-msg{
     background:white;
-    margin-right:auto;
+    padding:8px 12px;
+    border-radius:10px;
+    margin:5px;
+    width:fit-content;
 }
 
-.time{
-    font-size:10px;
-    color:gray;
-}
-
-.header{
-    background:#075E54;
+.chat-header{
+    background:#075e54;
     color:white;
     padding:12px;
     border-radius:8px;
-    margin-bottom:10px;
+    font-weight:bold;
 }
 
-.input-box{
-    margin-top:10px;
+.sidebar-contact{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+.sidebar-contact:hover{
+    background:#f0f0f0;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # -----------------------------------
-# PROFILES
+# PERSONA DATABASE
 # -----------------------------------
-PROFILES = {
-    "High Neuroticism": {
-        "bio":"I usually worry about online risks and verify information before trusting messages.",
-        "traits":{
-            "Openness":0.4,
-            "Conscientiousness":0.7,
-            "Extraversion":0.3,
-            "Agreeableness":0.55,
-            "Neuroticism":0.85
-        },
-        "replies":[
-            "I feel unsure about this.",
-            "This seems risky.",
-            "Can you explain more?"
-        ]
-    },
 
-    "High Extraversion": {
-        "bio":"I enjoy chatting with people online and responding quickly.",
-        "traits":{
-            "Openness":0.7,
-            "Conscientiousness":0.5,
-            "Extraversion":0.9,
-            "Agreeableness":0.65,
-            "Neuroticism":0.3
-        },
-        "replies":[
-            "Oh interesting 😄",
-            "Tell me more!",
-            "That sounds exciting!"
-        ]
-    },
+PERSONAS = {
 
-    "High Conscientiousness":{
-        "bio":"I prefer structured conversations and verified information.",
-        "traits":{
-            "Openness":0.5,
-            "Conscientiousness":0.9,
-            "Extraversion":0.4,
-            "Agreeableness":0.6,
-            "Neuroticism":0.3
-        },
-        "replies":[
-            "Please provide verification.",
-            "I need proper documentation.",
-            "Can you share official proof?"
-        ]
-    }
+"Neurotic Persona":{
+"bio":"I worry about online risks and verify information carefully.",
+"traits":{
+"Openness":0.42,
+"Conscientiousness":0.78,
+"Extraversion":0.31,
+"Agreeableness":0.56,
+"Neuroticism":0.74
+},
+"replies":[
+"This feels risky.",
+"I’m not comfortable with this.",
+"Can you explain more?",
+"I need to verify this."
+]
+},
+
+"Extravert Persona":{
+"bio":"I enjoy talking and interacting online.",
+"traits":{
+"Openness":0.7,
+"Conscientiousness":0.5,
+"Extraversion":0.9,
+"Agreeableness":0.6,
+"Neuroticism":0.3
+},
+"replies":[
+"Hey that sounds fun!",
+"Interesting 😄",
+"Tell me more!"
+]
+},
+
+"Conscientious Persona":{
+"bio":"I prefer secure and verified communication.",
+"traits":{
+"Openness":0.5,
+"Conscientiousness":0.9,
+"Extraversion":0.4,
+"Agreeableness":0.6,
+"Neuroticism":0.3
+},
+"replies":[
+"I need verification first.",
+"Please share official proof.",
+"This requires confirmation."
+]
+}
+
 }
 
 # -----------------------------------
-# PROFILE SELECTOR
+# SESSION STATE
 # -----------------------------------
-profile = st.selectbox(
-    "Select Personality Profile",
-    list(PROFILES.keys())
-)
 
-data = PROFILES[profile]
+if "current_chat" not in st.session_state:
+    st.session_state.current_chat=list(PERSONAS.keys())[0]
+
+if "messages" not in st.session_state:
+    st.session_state.messages={p:[] for p in PERSONAS}
+
+if "show_graph" not in st.session_state:
+    st.session_state.show_graph=False
 
 # -----------------------------------
 # LAYOUT
 # -----------------------------------
-left, right = st.columns([1,2])
+
+left,right=st.columns([1,3])
 
 # -----------------------------------
-# LEFT PANEL (PROFILE)
+# LEFT SIDEBAR (PERSONA LIST)
 # -----------------------------------
+
 with left:
 
-    st.subheader("🧠 Persona Profile")
+    st.subheader("Personas")
 
-    st.markdown("### Bio")
-    st.write(data["bio"])
+    for persona in PERSONAS:
 
-    st.markdown("### Big Five Traits")
+        col1,col2=st.columns([4,1])
 
-    fig = go.Figure(
-        data=[go.Bar(
-            x=list(data["traits"].keys()),
-            y=list(data["traits"].values())
-        )]
-    )
+        with col1:
 
-    fig.update_layout(
-        height=300,
-        yaxis=dict(range=[0,1]),
-        margin=dict(l=10,r=10,t=10,b=10)
-    )
+            if st.button(persona,key=persona,use_container_width=True):
 
-    st.plotly_chart(fig,use_container_width=True)
+                st.session_state.current_chat=persona
+
+        with col2:
+
+            if st.button("📊",key=persona+"graph"):
+
+                st.session_state.show_graph=True
+                st.session_state.graph_persona=persona
 
 # -----------------------------------
-# RIGHT PANEL (WHATSAPP CHAT)
+# RIGHT CHAT WINDOW
 # -----------------------------------
+
 with right:
 
+    persona=st.session_state.current_chat
+    data=PERSONAS[persona]
+
     st.markdown(
-        f'<div class="header">💬 Chatting with Persona ({profile})</div>',
+        f'<div class="chat-header">💬 {persona}</div>',
         unsafe_allow_html=True
     )
 
-    chat_html = '<div class="chat-container">'
+    st.markdown('<div class="chat-container">',unsafe_allow_html=True)
 
-    for msg in st.session_state.messages:
+    for msg in st.session_state.messages[persona]:
 
         if msg["role"]=="user":
-            bubble="user"
+
+            st.markdown(
+            f'<div class="user-msg">{msg["text"]}<br><small>{msg["time"]}</small></div>',
+            unsafe_allow_html=True
+            )
+
         else:
-            bubble="ai"
 
-        chat_html += f"""
-        <div class="message {bubble}">
-        {msg["content"]}
-        <div class="time">{msg["time"]}</div>
-        </div>
-        """
+            st.markdown(
+            f'<div class="ai-msg">{msg["text"]}<br><small>{msg["time"]}</small></div>',
+            unsafe_allow_html=True
+            )
 
-    chat_html += "</div>"
+    st.markdown('</div>',unsafe_allow_html=True)
 
-    st.markdown(chat_html, unsafe_allow_html=True)
-
-    # -----------------------------------
-    # INPUT BOX
-    # -----------------------------------
-    user_input = st.text_input("Type message", key="input")
+    user_input=st.text_input("Type message")
 
     if st.button("Send"):
 
-        if user_input.strip()!="":
+        if user_input!="":
 
             now=datetime.now().strftime("%H:%M")
 
-            st.session_state.messages.append({
-                "role":"user",
-                "content":user_input,
-                "time":now
+            st.session_state.messages[persona].append({
+            "role":"user",
+            "text":user_input,
+            "time":now
             })
 
-            # AI thinking
-            time.sleep(random.randint(1,2))
+            time.sleep(1)
 
             reply=random.choice(data["replies"])
 
-            now=datetime.now().strftime("%H:%M")
-
-            st.session_state.messages.append({
-                "role":"ai",
-                "content":reply,
-                "time":now
+            st.session_state.messages[persona].append({
+            "role":"ai",
+            "text":reply,
+            "time":now
             })
 
             st.rerun()
 
-    st.markdown("---")
+# -----------------------------------
+# GRAPH POPUP
+# -----------------------------------
 
-    if st.button("🧹 Clear Chat"):
-        st.session_state.messages=[]
-        st.rerun()
+if st.session_state.show_graph:
+
+    persona=st.session_state.graph_persona
+    traits=PERSONAS[persona]["traits"]
+
+    st.subheader(f"{persona} Personality Traits")
+
+    fig=go.Figure(
+        data=[
+            go.Scatterpolar(
+            r=list(traits.values()),
+            theta=list(traits.keys()),
+            fill='toself'
+            )
+        ]
+    )
+
+    fig.update_layout(
+    polar=dict(radialaxis=dict(range=[0,1])),
+    height=400
+    )
+
+    st.plotly_chart(fig,use_container_width=True)
+
+    if st.button("Close Graph"):
+
+        st.session_state.show_graph=False
