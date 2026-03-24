@@ -71,7 +71,7 @@ with col1:
                 processed = {
                     "bio": data.get("bio", ""),
                     "personality": {
-                        "openness": data["personality"].getget("openness", 0),
+                        "openness": data["personality"].get("openness", 0),
                          "conscientiousness": data["personality"].get("conscientiousness", 0),
                         "extraversion": data["personality"].get("extraversion", 0),
                         "agreeableness": data["personality"].get("agreeableness", 0),
